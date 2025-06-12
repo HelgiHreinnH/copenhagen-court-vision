@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer - Copenhagen Court Vision</title>
+    <meta name="description" content="Preview and test your 3D basketball court model">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0066CC;
+            --primary-dark: #004499;
+            --success-color: #00A652;
+            --warning-color: #FFC40C;
+            --error-color: #E4002B;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --background-secondary: #F5F5F5;
+            --border: #E0E0E0;
+            --border-radius: 8px;
+            --spacing: 16px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+        
+        .viewer-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #model-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+        
+        #model-canvas:active {
+            cursor: grabbing;
+        }
+        
+        .controls-panel {
+            position: absolute;
+            top: var(--spacing);
+            left: var(--spacing);
+            background: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            min-width: 300px;
+            max-height: calc(100vh - 2 * var(--spacing));
+            overflow-y: auto;
+        }
+        
+        .controls-panel h2 {
+            margin: 0 0 var(--spacing) 0;
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        
+        .control-group {
+            margin-bottom: calc(var(--spacing) * 1.5);
+        }
+        
+        .control-group h3 {
+            margin: 0 0 calc(var(--spacing) / 2) 0;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: var(--spacing);
+            align-items: center;
+            margin-bottom: calc(var(--spacing) / 2);
+        }
+        
+        label {
+            min-width: 80px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        input[type="range"] {
+            flex: 1;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: calc(var(--spacing) / 2);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--border-radius) / 2);
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: calc(var(--spacing) / 2) var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            width: 100%;
+            margin-bottom: calc(var(--spacing) / 2);
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+        }
+        
+        button.secondary {
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        button.secondary:hover {
+            background: var(--border);
+        }
+        
+        .info-panel {
+            background: var(--background-secondary);
+            padding: var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing);
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: calc(var(--spacing) / 4);
+        }
+        
+        .status {
+            position: absolute;
+            bottom: var(--spacing);
+            left: var(--spacing);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: calc(var(--spacing) / 2) var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            font-size: 0.875rem;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: white;
+            padding: calc(var(--spacing) * 2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing) auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: var(--error-color);
+            background: rgba(228, 0, 43, 0.1);
+            padding: var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            margin-bottom: var(--spacing);
+        }
+        
+        .success {
+            color: var(--success-color);
+            background: rgba(0, 166, 82, 0.1);
+            padding: var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            margin-bottom: var(--spacing);
+        }
+        
+        @media (max-width: 768px) {
+            .controls-panel {
+                position: fixed;
+                top: auto;
+                bottom: var(--spacing);
+                left: var(--spacing);
+                right: var(--spacing);
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-container">
+        <canvas id="model-canvas"></canvas>
+        
+        <div class="controls-panel">
+            <h2>🎮 3D Model Viewer</h2>
+            
+            <div class="control-group">
+                <h3>📂 Load Model</h3>
+                <input type="file" id="model-file" accept=".glb,.gltf,.usdz" />
+                <button onclick="loadDefaultModel()">Load Default Court Model</button>
+                <button onclick="loadSampleModel()" class="secondary">Load Sample Cube</button>
+            </div>
+            
+            <div id="model-info" class="info-panel" style="display: none;">
+                <div class="info-item">
+                    <span>File Size:</span>
+                    <span id="file-size">--</span>
+                </div>
+                <div class="info-item">
+                    <span>Vertices:</span>
+                    <span id="vertex-count">--</span>
+                </div>
+                <div class="info-item">
+                    <span>Faces:</span>
+                    <span id="face-count">--</span>
+                </div>
+                <div class="info-item">
+                    <span>Materials:</span>
+                    <span id="material-count">--</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>📏 Transform</h3>
+                <div class="control-row">
+                    <label>Scale:</label>
+                    <input type="range" id="scale-slider" min="0.1" max="3" step="0.1" value="1" />
+                    <span id="scale-value">1.0</span>
+                </div>
+                <div class="control-row">
+                    <label>Rotate X:</label>
+                    <input type="range" id="rotation-x" min="-180" max="180" step="5" value="0" />
+                    <span id="rotation-x-value">0°</span>
+                </div>
+                <div class="control-row">
+                    <label>Rotate Y:</label>
+                    <input type="range" id="rotation-y" min="-180" max="180" step="5" value="0" />
+                    <span id="rotation-y-value">0°</span>
+                </div>
+                <div class="control-row">
+                    <label>Rotate Z:</label>
+                    <input type="range" id="rotation-z" min="-180" max="180" step="5" value="0" />
+                    <span id="rotation-z-value">0°</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>💡 Lighting</h3>
+                <div class="control-row">
+                    <label>Intensity:</label>
+                    <input type="range" id="light-intensity" min="0" max="3" step="0.1" value="1" />
+                    <span id="light-value">1.0</span>
+                </div>
+                <button onclick="toggleWireframe()" class="secondary">Toggle Wireframe</button>
+                <button onclick="resetView()" class="secondary">Reset View</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>🔧 Debug</h3>
+                <button onclick="showBoundingBox()" class="secondary">Show Bounding Box</button>
+                <button onclick="exportModelInfo()" class="secondary">Export Model Info</button>
+                <button onclick="testARCompatibility()" class="secondary">Test AR Compatibility</button>
+            </div>
+            
+            <div id="messages"></div>
+        </div>
+        
+        <div class="status" id="status">
+            Ready - Use mouse to orbit, scroll to zoom
+        </div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading 3D model...</p>
+        </div>
+    </div>
+    
+    <script>
+        // Three.js scene setup
+        let scene, camera, renderer, controls;
+        let currentModel = null;
+        let directionalLight;
+        let wireframeMode = false;
+        let boundingBoxHelper = null;
+        
+        // Initialize 3D viewer
+        function initViewer() {
+            const canvas = document.getElementById('model-canvas');
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+            
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Controls setup
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // Lighting setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Grid helper
+            const gridHelper = new THREE.GridHelper(20, 20);
+            scene.add(gridHelper);
+            
+            // Axes helper
+            const axesHelper = new THREE.AxesHelper(5);
+            scene.add(axesHelper);
+            
+            // Event listeners
+            setupEventListeners();
+            
+            // Start render loop
+            animate();
+            
+            console.log('🎮 3D Model Viewer initialized');
+        }
+        
+        function setupEventListeners() {
+            // File input
+            document.getElementById('model-file').addEventListener('change', handleFileSelect);
+            
+            // Sliders
+            document.getElementById('scale-slider').addEventListener('input', updateScale);
+            document.getElementById('rotation-x').addEventListener('input', updateRotation);
+            document.getElementById('rotation-y').addEventListener('input', updateRotation);
+            document.getElementById('rotation-z').addEventListener('input', updateRotation);
+            document.getElementById('light-intensity').addEventListener('input', updateLighting);
+            
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Model loading functions
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                loadModelFromFile(file);
+            }
+        }
+        
+        function loadModelFromFile(file) {
+            showLoading(true);
+            showMessage('Loading model from file...', 'info');
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const arrayBuffer = e.target.result;
+                const loader = new THREE.GLTFLoader();
+                
+                loader.parse(arrayBuffer, '', (gltf) => {
+                    addModelToScene(gltf.scene);
+                    updateModelInfo(file, gltf);
+                    showMessage(`Model loaded successfully: ${file.name}`, 'success');
+                    showLoading(false);
+                }, (error) => {
+                    console.error('Model loading error:', error);
+                    showMessage(`Failed to load model: ${error.message}`, 'error');
+                    showLoading(false);
+                });
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function loadDefaultModel() {
+            showLoading(true);
+            showMessage('Loading default court model...', 'info');
+            
+            const loader = new THREE.GLTFLoader();
+            loader.load('../assets/models/sonder_court.glb', (gltf) => {
+                addModelToScene(gltf.scene);
+                updateModelInfo(null, gltf);
+                showMessage('Default court model loaded successfully', 'success');
+                showLoading(false);
+            }, (progress) => {
+                const percent = Math.round((progress.loaded / progress.total) * 100);
+                updateStatus(`Loading: ${percent}%`);
+            }, (error) => {
+                console.error('Default model loading error:', error);
+                showMessage('Default model not found. Please load a model file.', 'error');
+                showLoading(false);
+            });
+        }
+        
+        function loadSampleModel() {
+            // Create a simple sample model
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshLambertMaterial({ color: 0x0066CC });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(0, 1, 0);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            
+            // Create a sample scene
+            const group = new THREE.Group();
+            group.add(cube);
+            
+            // Add a ground plane
+            const planeGeometry = new THREE.PlaneGeometry(10, 10);
+            const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.rotation.x = -Math.PI / 2;
+            plane.receiveShadow = true;
+            group.add(plane);
+            
+            addModelToScene(group);
+            
+            // Mock model info
+            updateModelInfo({ name: 'Sample Cube', size: 1024 }, {
+                scene: { children: [cube, plane] }
+            });
+            
+            showMessage('Sample model loaded', 'success');
+        }
+        
+        function addModelToScene(model) {
+            // Remove existing model
+            if (currentModel) {
+                scene.remove(currentModel);
+            }
+            
+            // Add new model
+            currentModel = model;
+            scene.add(currentModel);
+            
+            // Enable shadows
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            
+            // Center camera on model
+            const box = new THREE.Box3().setFromObject(currentModel);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+            
+            camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ);
+            controls.target.copy(center);
+            
+            updateStatus('Model loaded successfully');
+        }
+        
+        // Control functions
+        function updateScale() {
+            const scale = parseFloat(document.getElementById('scale-slider').value);
+            document.getElementById('scale-value').textContent = scale.toFixed(1);
+            
+            if (currentModel) {
+                currentModel.scale.set(scale, scale, scale);
+            }
+        }
+        
+        function updateRotation() {
+            if (!currentModel) return;
+            
+            const rotX = parseFloat(document.getElementById('rotation-x').value) * Math.PI / 180;
+            const rotY = parseFloat(document.getElementById('rotation-y').value) * Math.PI / 180;
+            const rotZ = parseFloat(document.getElementById('rotation-z').value) * Math.PI / 180;
+            
+            document.getElementById('rotation-x-value').textContent = Math.round(rotX * 180 / Math.PI) + '°';
+            document.getElementById('rotation-y-value').textContent = Math.round(rotY * 180 / Math.PI) + '°';
+            document.getElementById('rotation-z-value').textContent = Math.round(rotZ * 180 / Math.PI) + '°';
+            
+            currentModel.rotation.set(rotX, rotY, rotZ);
+        }
+        
+        function updateLighting() {
+            const intensity = parseFloat(document.getElementById('light-intensity').value);
+            document.getElementById('light-value').textContent = intensity.toFixed(1);
+            
+            directionalLight.intensity = intensity;
+        }
+        
+        function toggleWireframe() {
+            if (!currentModel) return;
+            
+            wireframeMode = !wireframeMode;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.wireframe = wireframeMode);
+                    } else {
+                        child.material.wireframe = wireframeMode;
+                    }
+                }
+            });
+            
+            updateStatus(wireframeMode ? 'Wireframe mode enabled' : 'Wireframe mode disabled');
+        }
+        
+        function showBoundingBox() {
+            if (!currentModel) return;
+            
+            // Remove existing bounding box
+            if (boundingBoxHelper) {
+                scene.remove(boundingBoxHelper);
+                boundingBoxHelper = null;
+                updateStatus('Bounding box hidden');
+                return;
+            }
+            
+            // Add bounding box
+            const box = new THREE.Box3().setFromObject(currentModel);
+            boundingBoxHelper = new THREE.Box3Helper(box, 0xff0000);
+            scene.add(boundingBoxHelper);
+            
+            updateStatus('Bounding box shown');
+        }
+        
+        function resetView() {
+            // Reset all controls
+            document.getElementById('scale-slider').value = 1;
+            document.getElementById('rotation-x').value = 0;
+            document.getElementById('rotation-y').value = 0;
+            document.getElementById('rotation-z').value = 0;
+            document.getElementById('light-intensity').value = 1;
+            
+            // Apply reset values
+            updateScale();
+            updateRotation();
+            updateLighting();
+            
+            // Reset camera
+            if (currentModel) {
+                const box = new THREE.Box3().setFromObject(currentModel);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                
+                camera.position.set(center.x + cameraZ, center.y + cameraZ, center.z + cameraZ);
+                controls.target.copy(center);
+            }
+            
+            updateStatus('View reset');
+        }
+        
+        // Info and debug functions
+        function updateModelInfo(file, gltf) {
+            const infoPanel = document.getElementById('model-info');
+            infoPanel.style.display = 'block';
+            
+            // File size
+            const fileSize = file ? formatFileSize(file.size) : 'Unknown';
+            document.getElementById('file-size').textContent = fileSize;
+            
+            // Count vertices and faces
+            let vertexCount = 0;
+            let faceCount = 0;
+            let materialCount = 0;
+            
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.geometry) {
+                        if (child.geometry.attributes.position) {
+                            vertexCount += child.geometry.attributes.position.count;
+                        }
+                        if (child.geometry.index) {
+                            faceCount += child.geometry.index.count / 3;
+                        }
+                    }
+                    if (child.material) {
+                        materialCount++;
+                    }
+                }
+            });
+            
+            document.getElementById('vertex-count').textContent = vertexCount.toLocaleString();
+            document.getElementById('face-count').textContent = Math.round(faceCount).toLocaleString();
+            document.getElementById('material-count').textContent = materialCount;
+        }
+        
+        function exportModelInfo() {
+            if (!currentModel) {
+                showMessage('No model loaded', 'error');
+                return;
+            }
+            
+            const info = {
+                timestamp: new Date().toISOString(),
+                modelInfo: {
+                    vertices: document.getElementById('vertex-count').textContent,
+                    faces: document.getElementById('face-count').textContent,
+                    materials: document.getElementById('material-count').textContent,
+                    fileSize: document.getElementById('file-size').textContent
+                },
+                boundingBox: new THREE.Box3().setFromObject(currentModel),
+                transform: {
+                    position: currentModel.position,
+                    rotation: currentModel.rotation,
+                    scale: currentModel.scale
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(info, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'model-info.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showMessage('Model info exported', 'success');
+        }
+        
+        function testARCompatibility() {
+            if (!currentModel) {
+                showMessage('No model loaded', 'error');
+                return;
+            }
+            
+            const issues = [];
+            const warnings = [];
+            
+            // Check file size (from displayed info)
+            const fileSizeText = document.getElementById('file-size').textContent;
+            if (fileSizeText.includes('MB')) {
+                const size = parseFloat(fileSizeText);
+                if (size > 30) {
+                    issues.push('File size too large for mobile AR (>30MB)');
+                } else if (size > 20) {
+                    warnings.push('File size may cause performance issues (>20MB)');
+                }
+            }
+            
+            // Check vertex count
+            const vertexCount = parseInt(document.getElementById('vertex-count').textContent.replace(/,/g, ''));
+            if (vertexCount > 100000) {
+                issues.push('Very high vertex count may cause performance issues');
+            } else if (vertexCount > 50000) {
+                warnings.push('High vertex count - consider optimization');
+            }
+            
+            // Check bounding box size
+            const box = new THREE.Box3().setFromObject(currentModel);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            
+            if (maxDim > 100) {
+                warnings.push('Model is very large - ensure correct scale for AR');
+            }
+            
+            // Generate report
+            let report = '🔍 AR Compatibility Report\n\n';
+            
+            if (issues.length === 0 && warnings.length === 0) {
+                report += '✅ Model appears compatible with AR\n';
+                report += '• File size: OK\n';
+                report += '• Vertex count: OK\n';
+                report += '• Scale: Reasonable\n';
+            } else {
+                if (issues.length > 0) {
+                    report += '❌ Issues found:\n';
+                    issues.forEach(issue => report += `• ${issue}\n`);
+                    report += '\n';
+                }
+                
+                if (warnings.length > 0) {
+                    report += '⚠️ Warnings:\n';
+                    warnings.forEach(warning => report += `• ${warning}\n`);
+                    report += '\n';
+                }
+            }
+            
+            report += `\nModel Statistics:
+• Vertices: ${document.getElementById('vertex-count').textContent}
+• Faces: ${document.getElementById('face-count').textContent}
+• Materials: ${document.getElementById('material-count').textContent}
+• File Size: ${document.getElementById('file-size').textContent}
+• Dimensions: ${size.x.toFixed(2)}m × ${size.y.toFixed(2)}m × ${size.z.toFixed(2)}m`;
+            
+            alert(report);
+        }
+        
+        // Utility functions
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = type || 'info';
+            messageEl.textContent = message;
+            
+            messagesDiv.appendChild(messageEl);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 5000);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initViewer();
+            console.log('🎮 3D Model Viewer ready');
+        });
+    </script>
+</body>
+</html>

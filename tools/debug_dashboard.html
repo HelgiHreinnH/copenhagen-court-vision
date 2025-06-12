@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Copenhagen Court Vision</title>
+    <meta name="description" content="Real-time analytics and feedback dashboard for Copenhagen Court Vision">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0066CC;
+            --primary-dark: #004499;
+            --success-color: #00A652;
+            --warning-color: #FFC40C;
+            --error-color: #E4002B;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --background-secondary: #F5F5F5;
+            --background-tertiary: #FAFAFA;
+            --border: #E0E0E0;
+            --border-radius: 8px;
+            --spacing: 16px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #3384D6);
+            color: white;
+            padding: calc(var(--spacing) * 2);
+            border-radius: var(--border-radius);
+            margin-bottom: calc(var(--spacing) * 2);
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 var(--spacing) 0;
+            font-size: 2rem;
+        }
+        
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            background: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: calc(var(--spacing) * 2);
+            display: flex;
+            gap: var(--spacing);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .controls button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: calc(var(--spacing) / 2) var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .controls button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .controls button.secondary {
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .controls button.secondary:hover {
+            background: var(--border);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: calc(var(--spacing) * 1.5);
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .stat-card {
+            background: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: calc(var(--spacing) / 2);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: calc(var(--spacing) / 2);
+        }
+        
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+        
+        .stat-change.negative {
+            color: var(--error-color);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: calc(var(--spacing) * 2);
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .chart-card {
+            background: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing);
+            color: var(--text-primary);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .feedback-section {
+            background: white;
+            padding: calc(var(--spacing) * 2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: calc(var(--spacing) * 2);
+            margin-top: var(--spacing);
+        }
+        
+        .feedback-summary {
+            background: var(--background-tertiary);
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+        }
+        
+        .feedback-breakdown {
+            display: flex;
+            gap: var(--spacing);
+            margin: var(--spacing) 0;
+        }
+        
+        .feedback-item {
+            flex: 1;
+            text-align: center;
+            padding: var(--spacing);
+            border-radius: var(--border-radius);
+        }
+        
+        .feedback-item.yes {
+            background: rgba(0, 166, 82, 0.1);
+            color: var(--success-color);
+        }
+        
+        .feedback-item.no {
+            background: rgba(228, 0, 43, 0.1);
+            color: var(--error-color);
+        }
+        
+        .feedback-item.neutral {
+            background: rgba(255, 196, 12, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .feedback-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: calc(var(--spacing) / 4);
+        }
+        
+        .feedback-label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .feedback-comments {
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--background-tertiary);
+            padding: var(--spacing);
+            border-radius: var(--border-radius);
+        }
+        
+        .comment-item {
+            background: white;
+            padding: var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            margin-bottom: var(--spacing);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: calc(var(--spacing) / 2);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .comment-vote {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .comment-vote.yes {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .comment-vote.no {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .comment-vote.neutral {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .comment-text {
+            color: var(--text-primary);
+        }
+        
+        .export-section {
+            background: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: var(--spacing);
+            flex-wrap: wrap;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: calc(var(--spacing) * 2);
+            color: var(--text-secondary);
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing) auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: calc(var(--spacing) * 3);
+            color: var(--text-secondary);
+        }
+        
+        .empty-state h3 {
+            margin-bottom: var(--spacing);
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .controls button {
+                width: 100%;
+            }
+            
+            .feedback-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>📊 Copenhagen Court Vision Analytics</h1>
+            <p>Real-time insights into community engagement and AR experience performance</p>
+        </div>
+        
+        <div class="controls">
+            <button onclick="refreshData()">🔄 Refresh Data</button>
+            <button onclick="exportData('json')" class="secondary">📥 Export JSON</button>
+            <button onclick="exportData('csv')" class="secondary">📊 Export CSV</button>
+            <button onclick="generateReport()" class="secondary">📋 Generate Report</button>
+            <button onclick="clearAllData()" class="secondary" style="color: var(--error-color);">🗑️ Clear Data</button>
+            <span id="last-update" style="margin-left: auto; color: var(--text-secondary); font-size: 0.875rem;"></span>
+        </div>
+        
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number" id="total-sessions">--</div>
+                <div class="stat-label">Total Sessions</div>
+                <div class="stat-change" id="sessions-change"></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="success-rate">--%</div>
+                <div class="stat-label">Success Rate</div>
+                <div class="stat-change" id="success-change"></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-number" id="feedback-count">--</div>
+                <div class="stat-label">Feedback Received</div>
+                <div class="stat-change" id="feedback-change"></div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📱</div>
+                <div class="stat-number" id="mobile-percentage">--%</div>
+                <div class="stat-label">Mobile Users</div>
+                <div class="stat-change" id="mobile-change"></div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">📈 Usage Funnel</div>
+                <div class="chart-container">
+                    <canvas id="funnel-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">🕒 Usage Over Time</div>
+                <div class="chart-container">
+                    <canvas id="timeline-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">📱 Device Breakdown</div>
+                <div class="chart-container">
+                    <canvas id="device-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">⚡ Performance Metrics</div>
+                <div class="chart-container">
+                    <canvas id="performance-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feedback-section">
+            <h2>💬 Community Feedback</h2>
+            <div class="feedback-grid">
+                <div class="feedback-summary">
+                    <h3>Response Breakdown</h3>
+                    <div class="feedback-breakdown">
+                        <div class="feedback-item yes">
+                            <div class="feedback-number" id="yes-votes">--</div>
+                            <div class="feedback-label">Support</div>
+                        </div>
+                        <div class="feedback-item neutral">
+                            <div class="feedback-number" id="neutral-votes">--</div>
+                            <div class="feedback-label">Neutral</div>
+                        </div>
+                        <div class="feedback-item no">
+                            <div class="feedback-number" id="no-votes">--</div>
+                            <div class="feedback-label">Oppose</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: var(--spacing);">
+                        <strong>Community Support: <span id="support-percentage">--%</span></strong>
+                    </div>
+                </div>
+                
+                <div class="feedback-comments" id="feedback-comments">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading feedback comments...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="export-section">
+            <h3>📤 Export & Reporting</h3>
+            <div class="export-buttons">
+                <button onclick="exportData('json')">📄 Export All Data (JSON)</button>
+                <button onclick="exportData('csv')">📊 Export Feedback (CSV)</button>
+                <button onclick="generateMunicipalReport()">🏛️ Municipal Report</button>
+                <button onclick="exportQRAnalytics()">🔲 QR Code Analytics</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/utils.js"></script>
+    <script src="../js/analytics.js"></script>
+    
+    <script>
+        let dashboardData = null;
+        let charts = {};
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('📊 Initializing Analytics Dashboard...');
+            
+            try {
+                await loadAnalyticsData();
+                initializeCharts();
+                setupAutoRefresh();
+                
+                console.log('✅ Dashboard initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize dashboard:', error);
+                showError('Failed to load analytics data');
+            }
+        });
+        
+        async function loadAnalyticsData() {
+            try {
+                // Try to load analytics from localStorage
+                const analytics = new AnalyticsTracker();
+                dashboardData = await analytics.getDashboardData();
+                
+                updateDashboard();
+                updateLastRefresh();
+                
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+                showEmptyState();
+            }
+        }
+        
+        function updateDashboard() {
+            if (!dashboardData) return;
+            
+            // Update stats cards
+            updateStatsCards();
+            
+            // Update charts
+            updateCharts();
+            
+            // Update feedback section
+            updateFeedbackSection();
+        }
+        
+        function updateStatsCards() {
+            const { overview, funnel, feedback, devices } = dashboardData;
+            
+            // Total sessions
+            document.getElementById('total-sessions').textContent = overview.totalSessions || 0;
+            
+            // Success rate
+            const successRate = overview.successRate || 0;
+            document.getElementById('success-rate').textContent = Math.round(successRate) + '%';
+            
+            // Feedback count
+            document.getElementById('feedback-count').textContent = feedback.total || 0;
+            
+            // Mobile percentage
+            const mobileTotal = devices.mobile.mobile + devices.mobile.desktop;
+            const mobilePercentage = mobileTotal > 0 ? Math.round((devices.mobile.mobile / mobileTotal) * 100) : 0;
+            document.getElementById('mobile-percentage').textContent = mobilePercentage + '%';
+        }
+        
+        function updateCharts() {
+            updateFunnelChart();
+            updateTimelineChart();
+            updateDeviceChart();
+            updatePerformanceChart();
+        }
+        
+        function updateFunnelChart() {
+            const ctx = document.getElementById('funnel-chart').getContext('2d');
+            const { funnel } = dashboardData;
+            
+            if (charts.funnel) {
+                charts.funnel.destroy();
+            }
+            
+            charts.funnel = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sessions', 'Camera Started', 'Markers Detected', 'Calibration Complete', 'Feedback Submitted'],
+                    datasets: [{
+                        label: 'Users',
+                        data: [
+                            funnel.sessions || 0,
+                            funnel.cameraStarted || 0,
+                            funnel.markersDetected || 0,
+                            funnel.calibrationComplete || 0,
+                            funnel.feedbackSubmitted || 0
+                        ],
+                        backgroundColor: [
+                            '#0066CC',
+                            '#3384D6',
+                            '#00A652',
+                            '#FFC40C',
+                            '#E4002B'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTimelineChart() {
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            
+            // Generate sample timeline data (in real implementation, this would come from actual events)
+            const timelineData = generateTimelineData();
+            
+            if (charts.timeline) {
+                charts.timeline.destroy();
+            }
+            
+            charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timelineData.labels,
+                    datasets: [{
+                        label: 'Sessions',
+                        data: timelineData.sessions,
+                        borderColor: '#0066CC',
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Successful Calibrations',
+                        data: timelineData.calibrations,
+                        borderColor: '#00A652',
+                        backgroundColor: 'rgba(0, 166, 82, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateDeviceChart() {
+            const ctx = document.getElementById('device-chart').getContext('2d');
+            const { devices } = dashboardData;
+            
+            const browserData = Object.entries(devices.browsers || {});
+            
+            if (charts.device) {
+                charts.device.destroy();
+            }
+            
+            charts.device = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: browserData.map(([browser]) => browser),
+                    datasets: [{
+                        data: browserData.map(([, count]) => count),
+                        backgroundColor: [
+                            '#0066CC',
+                            '#00A652',
+                            '#FFC40C',
+                            '#E4002B',
+                            '#6B7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updatePerformanceChart() {
+            const ctx = document.getElementById('performance-chart').getContext('2d');
+            const { performance } = dashboardData;
+            
+            // Create sample performance data
+            const performanceData = {
+                labels: ['Load Time', 'Calibration Time', 'Model Load', 'QR Detection'],
+                data: [3.2, 8.5, 2.1, 1.8] // Sample data in seconds
+            };
+            
+            if (charts.performance) {
+                charts.performance.destroy();
+            }
+            
+            charts.performance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: performanceData.labels,
+                    datasets: [{
+                        label: 'Average Time (seconds)',
+                        data: performanceData.data,
+                        borderColor: '#0066CC',
+                        backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                        pointBackgroundColor: '#0066CC'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateFeedbackSection() {
+            const { feedback } = dashboardData;
+            
+            // Update vote counts
+            document.getElementById('yes-votes').textContent = feedback.yes || 0;
+            document.getElementById('neutral-votes').textContent = feedback.neutral || 0;
+            document.getElementById('no-votes').textContent = feedback.no || 0;
+            
+            // Update support percentage
+            const total = (feedback.yes || 0) + (feedback.neutral || 0) + (feedback.no || 0);
+            const supportPercentage = total > 0 ? Math.round(((feedback.yes || 0) / total) * 100) : 0;
+            document.getElementById('support-percentage').textContent = supportPercentage + '%';
+            
+            // Update comments
+            updateFeedbackComments();
+        }
+        
+        function updateFeedbackComments() {
+            const commentsContainer = document.getElementById('feedback-comments');
+            
+            try {
+                const analytics = new AnalyticsTracker();
+                const allFeedback = analytics.getStoredFeedback();
+                const commentsWithText = allFeedback.filter(fb => fb.comment && fb.comment.trim());
+                
+                if (commentsWithText.length === 0) {
+                    commentsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No Comments Yet</h3>
+                            <p>Comments from users will appear here as they submit feedback.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const commentsHTML = commentsWithText
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .slice(0, 10) // Show last 10 comments
+                    .map(feedback => `
+                        <div class="comment-item">
+                            <div class="comment-meta">
+                                <span class="comment-vote ${feedback.vote}">${feedback.vote}</span>
+                                <span>${new Date(feedback.timestamp).toLocaleDateString()}</span>
+                            </div>
+                            <div class="comment-text">${escapeHtml(feedback.comment)}</div>
+                        </div>
+                    `).join('');
+                
+                commentsContainer.innerHTML = commentsHTML;
+                
+            } catch (error) {
+                console.error('Failed to load comments:', error);
+                commentsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error Loading Comments</h3>
+                        <p>Unable to load feedback comments.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function generateTimelineData() {
+            // Generate sample data for the last 7 days
+            const days = [];
+            const sessions = [];
+            const calibrations = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                
+                // Sample data - in real implementation, this would be from actual analytics
+                sessions.push(Math.floor(Math.random() * 20) + 5);
+                calibrations.push(Math.floor(Math.random() * 15) + 2);
+            }
+            
+            return {
+                labels: days,
+                sessions: sessions,
+                calibrations: calibrations
+            };
+        }
+        
+        function initializeCharts() {
+            // Charts will be initialized when data is loaded
+            console.log('🎨 Chart containers ready');
+        }
+        
+        function refreshData() {
+            console.log('🔄 Refreshing dashboard data...');
+            loadAnalyticsData();
+        }
+        
+        function updateLastRefresh() {
+            const now = new Date();
+            document.getElementById('last-update').textContent = 
+                `Last updated: ${now.toLocaleTimeString()}`;
+        }
+        
+        function setupAutoRefresh() {
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                refreshData();
+            }, 30000);
+        }
+        
+        function exportData(format) {
+            try {
+                const analytics = new AnalyticsTracker();
+                analytics.exportData(format);
+                
+                console.log(`📤 Exported data in ${format} format`);
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('Failed to export data');
+            }
+        }
+        
+        function generateReport() {
+            try {
+                const analytics = new AnalyticsTracker();
+                analytics.generateReport().then(report => {
+                    const reportText = Object.values(report).join('\n\n');
+                    
+                    const blob = new Blob([reportText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'copenhagen-court-vision-report.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    console.log('📋 Generated analytics report');
+                });
+            } catch (error) {
+                console.error('Report generation failed:', error);
+                alert('Failed to generate report');
+            }
+        }
+        
+        function generateMunicipalReport() {
+            try {
+                const analytics = new AnalyticsTracker();
+                const feedbackSystem = new FeedbackSystem();
+                const report = feedbackSystem.generateMunicipalReport();
+                
+                const blob = new Blob([JSON.stringify(report, null, 2)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'copenhagen-municipal-report.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('🏛️ Generated municipal report');
+            } catch (error) {
+                console.error('Municipal report generation failed:', error);
+                alert('Failed to generate municipal report');
+            }
+        }
+        
+        function exportQRAnalytics() {
+            try {
+                const analytics = new AnalyticsTracker();
+                const events = analytics.getStoredEvents();
+                const qrEvents = events.filter(e => e.eventType === 'qr_marker_detected');
+                
+                const qrData = {
+                    summary: {
+                        totalScans: qrEvents.length,
+                        uniqueSessions: new Set(qrEvents.map(e => e.sessionId)).size,
+                        byMarker: qrEvents.reduce((acc, e) => {
+                            const marker = e.data.markerId || 'unknown';
+                            acc[marker] = (acc[marker] || 0) + 1;
+                            return acc;
+                        }, {})
+                    },
+                    events: qrEvents
+                };
+                
+                const blob = new Blob([JSON.stringify(qrData, null, 2)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'qr-code-analytics.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('🔲 Exported QR code analytics');
+            } catch (error) {
+                console.error('QR analytics export failed:', error);
+                alert('Failed to export QR analytics');
+            }
+        }
+        
+        function clearAllData() {
+            if (!confirm('Are you sure you want to clear all analytics data? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const analytics = new AnalyticsTracker();
+                analytics.clearAllData();
+                
+                const feedbackSystem = new FeedbackSystem();
+                feedbackSystem.clearAllFeedback();
+                
+                // Refresh dashboard
+                location.reload();
+                
+                console.log('🗑️ All data cleared');
+            } catch (error) {
+                console.error('Data clearing failed:', error);
+                alert('Failed to clear data');
+            }
+        }
+        
+        function showError(message) {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <h3>⚠️ Error</h3>
+                    <p>${message}</p>
+                    <button onclick="refreshData()">Try Again</button>
+                </div>
+            `;
+        }
+        
+        function showEmptyState() {
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <h3>📊 No Data Yet</h3>
+                    <p>Analytics data will appear here once users start using the AR experience.</p>
+                    <a href="../ar-experience.html" style="color: var(--primary-color);">Try the AR Experience</a>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        console.log('📊 Analytics Dashboard loaded');
+    </script>
+</body>
+</html>

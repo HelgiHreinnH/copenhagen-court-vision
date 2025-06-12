@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator - Copenhagen Court Vision</title>
+    <meta name="description" content="Generate QR codes for Copenhagen Court Vision AR experience">
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0066CC;
+            --primary-dark: #004499;
+            --secondary-color: #E4002B;
+            --success-color: #00A652;
+            --warning-color: #FFC40C;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background: #FFFFFF;
+            --background-secondary: #F5F5F5;
+            --border: #E0E0E0;
+            --border-radius: 8px;
+            --spacing: 16px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: var(--spacing);
+            background: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--background);
+            border-radius: var(--border-radius);
+            padding: calc(var(--spacing) * 2);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: calc(var(--spacing) * 2);
+            font-size: 2rem;
+        }
+        
+        .intro {
+            background: linear-gradient(135deg, var(--primary-color), #3384D6);
+            color: white;
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .intro h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+        }
+        
+        .settings {
+            background: var(--background-secondary);
+            padding: calc(var(--spacing) * 1.5);
+            border-radius: var(--border-radius);
+            margin-bottom: calc(var(--spacing) * 2);
+        }
+        
+        .settings h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: var(--spacing);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: calc(var(--spacing) / 2);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: calc(var(--spacing) / 2);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--border-radius) / 2);
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: calc(var(--spacing) / 2) var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: calc(var(--spacing) * 2);
+            margin-top: calc(var(--spacing) * 2);
+        }
+        
+        .qr-card {
+            background: var(--background);
+            border: 2px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: calc(var(--spacing) * 1.5);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .qr-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .qr-card.entrance {
+            border-color: var(--primary-color);
+        }
+        
+        .qr-card.left {
+            border-color: var(--success-color);
+        }
+        
+        .qr-card.right {
+            border-color: var(--warning-color);
+        }
+        
+        .qr-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing);
+            color: var(--text-primary);
+        }
+        
+        .qr-canvas {
+            margin: var(--spacing) 0;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--border-radius) / 2);
+        }
+        
+        .qr-info {
+            background: var(--background-secondary);
+            padding: var(--spacing);
+            border-radius: calc(var(--border-radius) / 2);
+            margin: var(--spacing) 0;
+            text-align: left;
+        }
+        
+        .qr-url {
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            color: var(--text-secondary);
+            background: white;
+            padding: calc(var(--spacing) / 2);
+            border-radius: calc(var(--border-radius) / 4);
+            border: 1px solid var(--border);
+        }
+        
+        .qr-specs {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .download-btn {
+            background: var(--success-color);
+            margin-top: var(--spacing);
+        }
+        
+        .download-btn:hover {
+            background: #008040;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: var(--border-radius);
+            padding: calc(var(--spacing) * 1.5);
+            margin-top: calc(var(--spacing) * 2);
+        }
+        
+        .instructions h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            margin: 0;
+            padding-left: calc(var(--spacing) * 1.5);
+        }
+        
+        .instructions li {
+            margin-bottom: calc(var(--spacing) / 2);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: calc(var(--spacing) * 2);
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing);
+            }
+            
+            .qr-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing);
+            }
+            
+            .qr-url {
+                font-size: 0.625rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← Back to Copenhagen Court Vision</a>
+        
+        <h1>🔲 QR Code Generator</h1>
+        
+        <div class="intro">
+            <h2>Generate QR Codes for AR Experience</h2>
+            <p>Create the QR codes needed for the Copenhagen Court Vision AR experience. These codes will be placed at specific locations around the basketball court to enable precise AR calibration.</p>
+        </div>
+        
+        <div class="settings">
+            <h3>⚙️ Settings</h3>
+            <div class="form-group">
+                <label for="base-url">Base URL:</label>
+                <input type="url" id="base-url" placeholder="https://your-domain.github.io/copenhagen-court-vision" />
+                <small>Enter your GitHub Pages URL or website domain</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="qr-size">QR Code Size:</label>
+                <select id="qr-size">
+                    <option value="256" selected>256x256 (Standard)</option>
+                    <option value="128">128x128 (Small)</option>
+                    <option value="512">512x512 (Large)</option>
+                    <option value="1024">1024x1024 (Print Quality)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="qr-margin">Margin:</label>
+                <select id="qr-margin">
+                    <option value="1">Minimal</option>
+                    <option value="2" selected>Standard</option>
+                    <option value="4">Large</option>
+                </select>
+            </div>
+            
+            <button id="generate-btn" onclick="generateAllQRCodes()">Generate QR Codes</button>
+        </div>
+        
+        <div class="qr-grid" id="qr-grid">
+            <!-- QR codes will be generated here -->
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Installation Instructions</h3>
+            <ul>
+                <li><strong>Point A (Entrance):</strong> Print at A4 size, laminate, mount at entrance at eye level (1.5m height)</li>
+                <li><strong>Point B (Left Hoop):</strong> Print as 40x40mm sticker, attach to left hoop frame at 1600mm height</li>
+                <li><strong>Point C (Right Hoop):</strong> Print as 40x40mm sticker, attach to right hoop frame at 1600mm height</li>
+                <li><strong>Material:</strong> Use waterproof, UV-resistant printing for outdoor durability</li>
+                <li><strong>Testing:</strong> Scan each QR code with multiple devices before installation</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // QR Code configuration
+        const qrConfigs = [
+            {
+                id: 'entrance',
+                name: 'Point A - Entrance',
+                description: 'Large poster at court entrance',
+                path: '/ar-experience.html?start=entrance',
+                specs: 'A4 size (210×297mm), 1500mm height',
+                class: 'entrance',
+                icon: '🚪'
+            },
+            {
+                id: 'left',
+                name: 'Point B - Left Hoop',
+                description: 'Small sticker on left hoop frame', 
+                path: '/ar-experience.html?marker=left',
+                specs: '40×40mm sticker, 1600mm height',
+                class: 'left',
+                icon: '🏀'
+            },
+            {
+                id: 'right',
+                name: 'Point C - Right Hoop',
+                description: 'Small sticker on right hoop frame',
+                path: '/ar-experience.html?marker=right', 
+                specs: '40×40mm sticker, 1600mm height',
+                class: 'right',
+                icon: '🏀'
+            }
+        ];
+        
+        // Auto-detect current URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentDomain = window.location.origin;
+            const basePath = window.location.pathname.replace('/tools/qr-generator.html', '');
+            const baseUrl = currentDomain + basePath;
+            
+            document.getElementById('base-url').value = baseUrl;
+            
+            // Generate QR codes automatically
+            generateAllQRCodes();
+        });
+        
+        function generateAllQRCodes() {
+            const baseUrl = document.getElementById('base-url').value.trim();
+            const size = parseInt(document.getElementById('qr-size').value);
+            const margin = parseInt(document.getElementById('qr-margin').value);
+            
+            if (!baseUrl) {
+                alert('Please enter a base URL');
+                return;
+            }
+            
+            // Validate URL
+            try {
+                new URL(baseUrl);
+            } catch (e) {
+                alert('Please enter a valid URL');
+                return;
+            }
+            
+            const qrGrid = document.getElementById('qr-grid');
+            qrGrid.innerHTML = '';
+            
+            qrConfigs.forEach(config => {
+                generateQRCode(config, baseUrl, size, margin);
+            });
+        }
+        
+        function generateQRCode(config, baseUrl, size, margin) {
+            const fullUrl = baseUrl + config.path;
+            
+            // Create QR card
+            const qrCard = document.createElement('div');
+            qrCard.className = `qr-card ${config.class}`;
+            
+            qrCard.innerHTML = `
+                <div class="qr-title">${config.icon} ${config.name}</div>
+                <canvas id="qr-${config.id}" class="qr-canvas"></canvas>
+                <div class="qr-info">
+                    <div><strong>Description:</strong> ${config.description}</div>
+                    <div><strong>Specifications:</strong> ${config.specs}</div>
+                    <div class="qr-url">${fullUrl}</div>
+                </div>
+                <button class="download-btn" onclick="downloadQR('${config.id}', '${config.name}')">
+                    📥 Download ${config.name.split(' - ')[1]}
+                </button>
+            `;
+            
+            document.getElementById('qr-grid').appendChild(qrCard);
+            
+            // Generate QR code
+            const canvas = document.getElementById(`qr-${config.id}`);
+            
+            QRCode.toCanvas(canvas, fullUrl, {
+                width: size,
+                height: size,
+                margin: margin,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'M'
+            }, (error) => {
+                if (error) {
+                    console.error(`Failed to generate QR for ${config.id}:`, error);
+                    canvas.parentNode.innerHTML = `<p style="color: red;">Failed to generate QR code: ${error.message}</p>`;
+                } else {
+                    console.log(`✅ Generated QR code for ${config.name}`);
+                }
+            });
+        }
+        
+        function downloadQR(id, name) {
+            const canvas = document.getElementById(`qr-${id}`);
+            if (!canvas) return;
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `copenhagen-court-${id}-qr.png`;
+            link.href = canvas.toDataURL('image/png');
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`📥 Downloaded QR code: ${name}`);
+        }
+        
+        // Batch download all QR codes
+        function downloadAllQRCodes() {
+            qrConfigs.forEach((config, index) => {
+                setTimeout(() => {
+                    downloadQR(config.id, config.name.split(' - ')[1]);
+                }, index * 500); // Stagger downloads
+            });
+        }
+        
+        // Add batch download button
+        window.addEventListener('DOMContentLoaded', () => {
+            const generateBtn = document.getElementById('generate-btn');
+            const batchBtn = document.createElement('button');
+            batchBtn.textContent = '📥 Download All QR Codes';
+            batchBtn.onclick = downloadAllQRCodes;
+            batchBtn.style.marginLeft = '10px';
+            batchBtn.style.background = '#00A652';
+            
+            generateBtn.parentNode.appendChild(batchBtn);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'g':
+                        e.preventDefault();
+                        generateAllQRCodes();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        downloadAllQRCodes();
+                        break;
+                }
+            }
+        });
+        
+        console.log('🔲 QR Code Generator loaded');
+    </script>
+</body>
+</html>
