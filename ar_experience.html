@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Experience - Copenhagen Court Vision</title>
+    <meta name="description" content="Augmented reality visualization of Copenhagen basketball court improvements">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0066CC">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Prevent zoom on double tap for better AR experience -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- AR.js and Three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/ar-overlay.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/copenhagen-theme.css">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="assets/models/sonder_court.glb" as="fetch" crossorigin>
+</head>
+<body class="ar-body">
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- AR Container -->
+    <div id="ar-container" aria-label="AR Camera View"></div>
+    
+    <!-- AR UI Overlay -->
+    <div class="ar-overlay" id="ar-overlay" role="application" aria-label="AR Court Vision Interface">
+        
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loading-screen" role="status" aria-live="polite">
+            <div class="loading-content">
+                <div class="spinner" aria-hidden="true"></div>
+                <h2>Initializing AR Experience</h2>
+                <p id="loading-message">Setting up camera and AR tracking...</p>
+                <div class="loading-tips">
+                    <p>💡 <strong>Tip:</strong> Make sure you're in good lighting and point camera at QR codes</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcome-screen" style="display: none;" role="dialog" aria-labelledby="welcome-title">
+            <div class="welcome-content">
+                <div class="welcome-header">
+                    <h1 id="welcome-title">🏀 Copenhagen Court Vision</h1>
+                    <p>Ready to see the future of this basketball court?</p>
+                </div>
+                
+                <div class="welcome-instructions">
+                    <div class="instruction-card">
+                        <div class="instruction-icon" aria-hidden="true">📱</div>
+                        <h3>Camera Permission Required</h3>
+                        <p>We need camera access to show AR content overlaid on the real world</p>
+                    </div>
+                    
+                    <div class="instruction-card">
+                        <div class="instruction-icon" aria-hidden="true">🔲</div>
+                        <h3>Scan QR Codes in Order</h3>
+                        <p>Start with entrance, then left hoop, then right hoop for precise calibration</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-large" id="start-camera" type="button">
+                    <span class="btn-icon" aria-hidden="true">📹</span>
+                    Start Camera & AR
+                </button>
+                
+                <div class="municipal-project-tag" style="margin-top: var(--spacing-lg);">
+                    Copenhagen Municipality Innovation Project
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main AR Interface -->
+        <div class="ar-interface" id="ar-interface" style="display: none;" role="main" id="main-content">
+            
+            <!-- Top Header -->
+            <div class="ar-header">
+                <div class="ar-title">
+                    <h2>Copenhagen Court Vision</h2>
+                    <p id="ar-instruction">Point camera at entrance QR code</p>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="ar-progress" role="progressbar" aria-labelledby="progress-text" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">Step 1 of 3</span>
+                </div>
+            </div>
+            
+            <!-- Bottom Status Panel -->
+            <div class="ar-status" id="ar-status">
+                <div class="marker-status-grid" role="group" aria-label="QR Code Scanning Progress">
+                    <div class="marker-status" data-marker="entrance">
+                        <div class="marker-icon active" id="marker-entrance" role="status" aria-label="Entrance marker status">
+                            <span class="marker-letter">A</span>
+                            <div class="marker-pulse" aria-hidden="true"></div>
+                        </div>
+                        <span class="marker-label">Entrance</span>
+                    </div>
+                    
+                    <div class="marker-status" data-marker="left">
+                        <div class="marker-icon pending" id="marker-left" role="status" aria-label="Left hoop marker status">
+                            <span class="marker-letter">B</span>
+                        </div>
+                        <span class="marker-label">Left Hoop</span>
+                    </div>
+                    
+                    <div class="marker-status" data-marker="right">
+                        <div class="marker-icon pending" id="marker-right" role="status" aria-label="Right hoop marker status">
+                            <span class="marker-letter">C</span>
+                        </div>
+                        <span class="marker-label">Right Hoop</span>
+                    </div>
+                </div>
+                
+                <!-- Additional Info -->
+                <div class="status-info">
+                    <div class="status-item">
+                        <span class="status-icon" aria-hidden="true">📍</span>
+                        <span id="tracking-status">Searching for markers...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AR Success Panel -->
+            <div class="ar-success" id="ar-success" style="display: none;" role="dialog" aria-labelledby="success-title">
+                <div class="success-content">
+                    <div class="success-icon" aria-hidden="true">✨</div>
+                    <h2 id="success-title">Court Vision Loaded!</h2>
+                    <p>Explore the upgraded basketball court with AR. Move around to see the improvements from different angles.</p>
+                    <div class="success-actions">
+                        <button class="btn btn-primary btn-large" id="give-feedback" type="button">
+                            <span class="btn-icon" aria-hidden="true">💬</span>
+                            Share Your Opinion
+                        </button>
+                        <button class="btn btn-secondary" id="restart-ar" type="button">
+                            <span class="btn-icon" aria-hidden="true">🔄</span>
+                            Start Over
+                        </button>
+                    </div>
+                    <div class="municipal-badge" style="margin-top: var(--spacing-lg);">
+                        Municipal Consultation Tool
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Panel -->
+        <div class="error-panel" id="error-panel" style="display: none;" role="alert" aria-labelledby="error-title">
+            <div class="error-content">
+                <div class="error-icon" aria-hidden="true">⚠️</div>
+                <h2 id="error-title">AR Not Available</h2>
+                <p id="error-message">Your device doesn't support AR or camera access was denied</p>
+                
+                <div class="error-solutions">
+                    <h3>Try this:</h3>
+                    <ul>
+                        <li>Grant camera permission when prompted</li>
+                        <li>Use a newer smartphone with camera</li>
+                        <li>Try refreshing the page</li>
+                        <li>Use Chrome on Android or Safari on iPhone</li>
+                        <li>Ensure you're using HTTPS connection</li>
+                    </ul>
+                </div>
+                
+                <div class="error-actions">
+                    <button class="btn btn-primary" id="retry-ar" type="button">
+                        <span class="btn-icon" aria-hidden="true">🔄</span>
+                        Try Again
+                    </button>
+                    <a href="index.html" class="btn btn-secondary">
+                        <span class="btn-icon" aria-hidden="true">🏠</span>
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug Panel (Hidden by default) -->
+        <div class="debug-panel" id="debug-panel" style="display: none;">
+            <div class="debug-header">
+                <h4>🔧 Debug Information</h4>
+                <button class="debug-close" id="debug-close" type="button" aria-label="Close debug panel">×</button>
+            </div>
+            <div class="debug-content" id="debug-content">
+                <!-- Debug info will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- iOS AR Quick Look Fallback -->
+    <div id="ios-ar-fallback" style="display: none;">
+        <a href="assets/models/sonder_court.usdz" rel="ar">
+            <img src="assets/images/ar-preview.jpg" alt="Tap to view in AR">
+        </a>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/court-model.js"></script>
+    <script src="js/qr-detector.js"></script>
+    <script src="js/feedback.js"></script>
+    <script src="js/ar-manager.js"></script>
+    
+    <script>
+        // Initialize the AR application
+        let arApp;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Starting Copenhagen Court Vision AR...');
+            
+            // Check for iOS AR Quick Look support
+            if (DeviceUtils.isIOS() && 'arqlexists' in document.createElement('a')) {
+                console.log('📱 iOS AR Quick Look available');
+            }
+            
+            // Initialize AR application
+            try {
+                arApp = new CopenhagenCourtAR();
+                
+                // Handle URL parameters for QR code entry
+                const urlParams = URLUtils.getParams();
+                const entryPoint = urlParams.get('start') || urlParams.get('marker');
+                
+                if (entryPoint) {
+                    console.log(`📱 Started from QR: ${entryPoint}`);
+                    arApp.setEntryPoint(entryPoint);
+                }
+                
+                // Debug mode activation (5 taps on corner)
+                let tapCount = 0;
+                let tapTimer;
+                document.addEventListener('click', (e) => {
+                    if (e.clientX < 50 && e.clientY < 50) {
+                        tapCount++;
+                        if (tapCount === 5) {
+                            arApp.enableDebugMode();
+                            tapCount = 0;
+                        }
+                        clearTimeout(tapTimer);
+                        tapTimer = setTimeout(() => tapCount = 0, 2000);
+                    }
+                });
+                
+                // Debug close button
+                document.getElementById('debug-close')?.addEventListener('click', () => {
+                    arApp.toggleDebugMode();
+                });
+                
+                // Restart AR button
+                document.getElementById('restart-ar')?.addEventListener('click', () => {
+                    arApp.retryARSetup();
+                });
+                
+            } catch (error) {
+                console.error('Failed to initialize AR application:', error);
+                
+                // Show error immediately if initialization fails
+                DOMUtils.hide('#loading-screen');
+                DOMUtils.hide('#welcome-screen');
+                DOMUtils.show('#error-panel', 'flex');
+                
+                const errorTitle = document.querySelector('#error-title');
+                const errorMessage = document.querySelector('#error-message');
+                
+                if (errorTitle) errorTitle.textContent = 'Initialization Error';
+                if (errorMessage) errorMessage.textContent = error.message || 'Failed to start AR application';
+            }
+        });
+        
+        // Handle page visibility change (pause/resume AR)
+        document.addEventListener('visibilitychange', () => {
+            if (arApp) {
+                if (document.hidden) {
+                    arApp.pause();
+                } else {
+                    arApp.resume();
+                }
+            }
+        });
+        
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (arApp) {
+                    arApp.handleOrientationChange();
+                }
+            }, 500);
+        });
+        
+        // Handle device motion for better AR tracking (if available)
+        if ('DeviceMotionEvent' in window) {
+            window.addEventListener('devicemotion', PerformanceUtils.throttle((e) => {
+                if (arApp && arApp.state === 'scanning') {
+                    // Use device motion data for improved tracking
+                    const acceleration = e.acceleration;
+                    if (acceleration) {
+                        // Could be used for motion-based calibration improvements
+                        console.debug('Device motion:', acceleration);
+                    }
+                }
+            }, 100));
+        }
+        
+        // Prevent zoom on double tap (better AR experience)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (event) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!arApp) return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    arApp.exitAR();
+                    break;
+                case 'r':
+                case 'R':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        arApp.retryARSetup();
+                    }
+                    break;
+                case 'd':
+                case 'D':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        arApp.toggleDebugMode();
+                    }
+                    break;
+                case 'f':
+                case 'F':
+                    if (arApp.state === 'success') {
+                        arApp.showFeedbackForm();
+                    }
+                    break;
+            }
+        });
+        
+        // Error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error in AR app:', e.error);
+            
+            if (window.analytics) {
+                window.analytics.trackError('ar_global_error', e.error?.message || 'Unknown error');
+            }
+            
+            // Show user-friendly error if AR app fails completely
+            if (arApp && arApp.state !== 'error') {
+                arApp.showError('Application Error', 'Something went wrong. Please refresh the page.');
+            }
+        });
+        
+        // Unhandled promise rejection handling
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection in AR app:', e.reason);
+            
+            if (window.analytics) {
+                window.analytics.trackError('ar_unhandled_rejection', e.reason?.message || 'Unknown rejection');
+            }
+        });
+        
+        // Page unload cleanup
+        window.addEventListener('beforeunload', () => {
+            if (arApp) {
+                arApp.destroy();
+            }
+        });
+        
+        // Make AR app available globally for debugging
+        window.arApp = arApp;
+        
+        // Export feedback function for municipal use
+        window.exportAllFeedback = () => {
+            if (window.analytics) {
+                return window.analytics.exportData('json');
+            }
+        };
+        
+        // Performance monitoring
+        if (window.PerformanceUtils) {
+            const fpsCounter = PerformanceUtils.getFPS();
+            
+            // Log performance periodically
+            setInterval(() => {
+                const fps = fpsCounter();
+                const memory = PerformanceUtils.getMemoryUsage();
+                
+                if (fps < 20 && window.analytics) {
+                    window.analytics.trackPerformance('low_fps', fps, 'fps');
+                }
+                
+                if (memory && memory.used > 100 && window.analytics) {
+                    window.analytics.trackPerformance('high_memory', memory.used, 'MB');
+                }
+            }, 10000); // Every 10 seconds
+        }
+        
+        // Service Worker registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        console.log('✅ Copenhagen Court Vision AR initialized');
+    </script>
+    
+    <!-- Structured Data for better SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Copenhagen Court Vision",
+        "description": "Augmented reality visualization of basketball court improvements for municipal decision-making",
+        "applicationCategory": "Government",
+        "operatingSystem": "Web Browser",
+        "permissions": "Camera access required",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "DKK"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "Copenhagen Municipality"
+        }
+    }
+    </script>
+</body>
+</html>

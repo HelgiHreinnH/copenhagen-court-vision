@@ -1,0 +1,94 @@
+{
+  "name": "Copenhagen Court Vision",
+  "short_name": "Court Vision",
+  "description": "AR visualization of basketball court improvements for municipal decision-making",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  
+  "icons": [
+    {
+      "src": "assets/icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ],
+  
+  "categories": ["government", "utilities", "education"],
+  "lang": "en",
+  
+  "shortcuts": [
+    {
+      "name": "Start AR Experience",
+      "short_name": "AR Experience",
+      "description": "Launch the AR basketball court visualization",
+      "url": "/ar-experience.html",
+      "icons": [
+        {
+          "src": "assets/icons/ar-shortcut-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Analytics",
+      "short_name": "Analytics",
+      "description": "View usage statistics and feedback",
+      "url": "/tools/debug-dashboard.html",
+      "icons": [
+        {
+          "src": "assets/icons/analytics-shortcut-96x96.png", 
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "assets/images/screenshot-mobile-1.png",
+      "type": "image/png",
+      "sizes": "390x844",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "assets/images/screenshot-desktop-1.png",
+      "type": "image/png", 
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    }
+  ],
+  
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://helgihreinnh.github.io/copenhagen-court-vision/manifest.json"
+    }
+  ],
+  
+  "prefer_related_applications": false
+}

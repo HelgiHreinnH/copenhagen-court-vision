@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copenhagen Court Vision - AR Basketball Court Visualization</title>
+    <meta name="description" content="See how Copenhagen's basketball court could be transformed with AR technology. Scan QR codes to visualize proposed improvements in real-time.">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Copenhagen Court Vision - AR Visualization">
+    <meta property="og:description" content="Interactive AR experience showing proposed basketball court improvements">
+    <meta property="og:image" content="assets/images/court-preview.jpg">
+    <meta property="og:url" content="https://helgihreinnh.github.io/copenhagen-court-vision/">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/copenhagen-theme.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="assets/models/sonder_court.glb" as="fetch" crossorigin>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="assets/images/copenhagen-logo.png" alt="Copenhagen" class="nav-logo">
+                <span class="nav-title">Court Vision</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="tools/debug-dashboard.html" class="nav-link">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <img src="assets/images/court-preview.jpg" alt="Basketball Court Vision" class="hero-image">
+            <div class="hero-overlay"></div>
+        </div>
+        
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="hero-emoji">🏀</span>
+                    Copenhagen Court Vision
+                </h1>
+                <p class="hero-subtitle">
+                    See the future of our basketball court with augmented reality
+                </p>
+                <p class="hero-description">
+                    Experience proposed court improvements in 1:1 scale using your smartphone. 
+                    No app download required - just scan QR codes at the court location.
+                </p>
+            </div>
+            
+            <div class="hero-actions">
+                <a href="ar-experience.html" class="btn btn-primary btn-large">
+                    <span class="btn-icon">📱</span>
+                    Start AR Experience
+                </a>
+                <button class="btn btn-secondary btn-large" id="demo-video">
+                    <span class="btn-icon">▶️</span>
+                    Watch Demo
+                </button>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number" id="total-sessions">--</span>
+                    <span class="stat-label">Citizens Engaged</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="support-percentage">--</span>
+                    <span class="stat-label">Support Upgrade</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">78%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">
+                Three simple steps to visualize the court transformation
+            </p>
+            
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-icon">
+                        <span class="step-number">1</span>
+                        <span class="step-emoji">📍</span>
+                    </div>
+                    <h3 class="step-title">Visit the Court</h3>
+                    <p class="step-description">
+                        Go to the basketball court location in Copenhagen. 
+                        Look for QR codes on the entrance poster and basketball hoop frames.
+                    </p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-icon">
+                        <span class="step-number">2</span>
+                        <span class="step-emoji">📱</span>
+                    </div>
+                    <h3 class="step-title">Scan QR Codes</h3>
+                    <p class="step-description">
+                        Use your smartphone camera to scan the QR codes in sequence: 
+                        entrance first, then left hoop, then right hoop.
+                    </p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-icon">
+                        <span class="step-number">3</span>
+                        <span class="step-emoji">👁️</span>
+                    </div>
+                    <h3 class="step-title">Explore & Vote</h3>
+                    <p class="step-description">
+                        See the upgraded court overlaid in AR at 1:1 scale. 
+                        Explore the improvements and share your feedback.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- QR Code Preview -->
+            <div class="qr-preview">
+                <h3>QR Code Locations</h3>
+                <div class="qr-locations">
+                    <div class="qr-location">
+                        <div class="qr-code">
+                            <img src="assets/qr-codes/entrance-qr.png" alt="Entrance QR Code" loading="lazy">
+                        </div>
+                        <span class="qr-label">Entrance (Point A)</span>
+                    </div>
+                    <div class="qr-location">
+                        <div class="qr-code">
+                            <img src="assets/qr-codes/left-hoop-qr.png" alt="Left Hoop QR Code" loading="lazy">
+                        </div>
+                        <span class="qr-label">Left Hoop (Point B)</span>
+                    </div>
+                    <div class="qr-location">
+                        <div class="qr-code">
+                            <img src="assets/qr-codes/right-hoop-qr.png" alt="Right Hoop QR Code" loading="lazy">
+                        </div>
+                        <span class="qr-label">Right Hoop (Point C)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section section-gray">
+        <div class="container">
+            <h2 class="section-title">Key Features</h2>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">No App Required</h3>
+                    <p class="feature-description">
+                        Works directly in your web browser. Compatible with all modern smartphones.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">📏</div>
+                    <h3 class="feature-title">1:1 Scale Accuracy</h3>
+                    <p class="feature-description">
+                        See exact proportions and measurements of proposed court improvements.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Real-time Tracking</h3>
+                    <p class="feature-description">
+                        Advanced AR positioning ensures the model stays locked to the real court.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">💬</div>
+                    <h3 class="feature-title">Community Feedback</h3>
+                    <p class="feature-description">
+                        Vote on proposed changes and help shape the future of the court.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Analytics Dashboard</h3>
+                    <p class="feature-description">
+                        Track engagement and gather data for municipal decision-making.
+                    </p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">Cross-Platform</h3>
+                    <p class="feature-description">
+                        Works on iOS, Android, and desktop browsers with camera access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">About This Project</h2>
+                    <p>
+                        Copenhagen Court Vision demonstrates how augmented reality can transform 
+                        municipal decision-making and community engagement. By visualizing proposed 
+                        improvements in real-world context, citizens can better understand and 
+                        provide feedback on urban development projects.
+                    </p>
+                    <p>
+                        This project uses cutting-edge web technologies to create an accessible, 
+                        cross-platform AR experience that requires no app downloads. The system 
+                        precisely positions 3D models using QR code calibration points, ensuring 
+                        accurate 1:1 scale visualization.
+                    </p>
+                    
+                    <div class="about-stats">
+                        <div class="about-stat">
+                            <h3>Technology</h3>
+                            <p>AR.js + Three.js + WebRTC</p>
+                        </div>
+                        <div class="about-stat">
+                            <h3>3D Model</h3>
+                            <p>Created in Rhino 3D, exported as GLB</p>
+                        </div>
+                        <div class="about-stat">
+                            <h3>Positioning</h3>
+                            <p>3-point QR calibration system</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="about-visual">
+                    <div class="about-model-viewer">
+                        <div class="model-preview">
+                            <div class="model-loading">
+                                <div class="spinner"></div>
+                                <p>Loading 3D Model...</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" id="view-3d-model">
+                            <span class="btn-icon">🎮</span>
+                            View 3D Model
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Experience the Future?</h2>
+                <p class="cta-description">
+                    Visit the basketball court and scan the QR codes to see the AR visualization in action.
+                </p>
+                
+                <div class="cta-actions">
+                    <a href="ar-experience.html" class="btn btn-primary btn-large">
+                        <span class="btn-icon">🚀</span>
+                        Start AR Experience
+                    </a>
+                    <a href="tools/qr-generator.html" class="btn btn-secondary btn-large">
+                        <span class="btn-icon">📋</span>
+                        Get QR Codes
+                    </a>
+                </div>
+                
+                <div class="cta-info">
+                    <p>
+                        <strong>For Municipalities:</strong> 
+                        <a href="docs/CUSTOMIZATION.md">Learn how to adapt this for your city</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="assets/images/copenhagen-logo.png" alt="Copenhagen" class="footer-logo">
+                    <p>Copenhagen Court Vision</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Project</h4>
+                        <a href="https://github.com/HelgiHreinnH/copenhagen-court-vision">GitHub</a>
+                        <a href="docs/INSTALLATION.md">Documentation</a>
+                        <a href="tools/debug-dashboard.html">Analytics</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="tools/qr-generator.html">QR Generator</a>
+                        <a href="tools/model-viewer.html">3D Model Viewer</a>
+                        <a href="docs/API.md">API Docs</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="https://github.com/HelgiHreinnH/copenhagen-court-vision/issues">Report Issues</a>
+                        <a href="docs/CUSTOMIZATION.md">Customization</a>
+                        <a href="mailto:contact@example.com">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Copenhagen Court Vision. MIT License.</p>
+                <p>Built with ❤️ for better urban spaces and community engagement</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/analytics.js"></script>
+    
+    <script>
+        // Initialize analytics tracking
+        const analytics = new AnalyticsTracker();
+        analytics.trackEvent('page_view', { page: 'landing' });
+        
+        // Load live statistics
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const stats = await analytics.getDashboardData();
+                
+                // Update hero stats
+                document.getElementById('total-sessions').textContent = stats.totalSessions || '0';
+                document.getElementById('support-percentage').textContent = 
+                    stats.feedback ? Math.round((stats.feedback.yes / (stats.feedback.yes + stats.feedback.no + stats.feedback.neutral)) * 100) + '%' : '--';
+                
+            } catch (error) {
+                console.log('Analytics not yet available');
+            }
+        });
+        
+        // Demo video modal (placeholder)
+        document.getElementById('demo-video').addEventListener('click', () => {
+            alert('Demo video would open here. For now, try the AR experience directly!');
+            analytics.trackEvent('demo_video_clicked');
+        });
+        
+        // 3D model viewer (placeholder)
+        document.getElementById('view-3d-model').addEventListener('click', () => {
+            window.open('tools/model-viewer.html', '_blank');
+            analytics.trackEvent('model_viewer_opened');
+        });
+        
+        // Track CTA clicks
+        document.querySelectorAll('a[href="ar-experience.html"]').forEach(link => {
+            link.addEventListener('click', () => {
+                analytics.trackEvent('ar_experience_started', { source: 'landing_page' });
+            });
+        });
+    </script>
+</body>
+</html>
