@@ -1,0 +1,501 @@
+/**
+ * Copenhagen Court Vision - Copenhagen Theme
+ * City-specific branding, colors, and visual identity
+ */
+
+/* ===== COPENHAGEN COLOR PALETTE ===== */
+:root {
+  /* Copenhagen Municipal Colors */
+  --copenhagen-blue: #0066CC;
+  --copenhagen-blue-dark: #004499;
+  --copenhagen-blue-light: #3384D6;
+  --copenhagen-red: #E4002B;
+  --copenhagen-green: #00A652;
+  --copenhagen-yellow: #FFC40C;
+  --copenhagen-grey: #6B7280;
+  --copenhagen-grey-light: #F3F4F6;
+  
+  /* Override primary colors with Copenhagen palette */
+  --primary-color: var(--copenhagen-blue);
+  --primary-dark: var(--copenhagen-blue-dark);
+  --primary-light: #E1F0FF;
+  --secondary-color: var(--copenhagen-red);
+  --accent-color: var(--copenhagen-green);
+  --warning-color: var(--copenhagen-yellow);
+  
+  /* Copenhagen specific gradients */
+  --copenhagen-gradient-primary: linear-gradient(135deg, var(--copenhagen-blue) 0%, var(--copenhagen-blue-light) 100%);
+  --copenhagen-gradient-hero: linear-gradient(135deg, var(--copenhagen-blue-dark) 0%, var(--copenhagen-blue) 50%, var(--copenhagen-blue-light) 100%);
+  --copenhagen-gradient-success: linear-gradient(135deg, var(--copenhagen-green) 0%, #66D9A7 100%);
+  
+  /* Typography adjustments for Danish */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ===== COPENHAGEN BRANDING ELEMENTS ===== */
+.copenhagen-crown::before {
+  content: "👑";
+  margin-right: var(--spacing-xs);
+  filter: sepia(100%) saturate(200%) hue-rotate(200deg);
+}
+
+.copenhagen-flag::before {
+  content: "🇩🇰";
+  margin-right: var(--spacing-xs);
+}
+
+/* ===== HERO SECTION COPENHAGEN STYLING ===== */
+.hero {
+  background: var(--copenhagen-gradient-hero);
+}
+
+.hero-overlay {
+  background: linear-gradient(135deg, 
+    rgba(0, 102, 204, 0.8) 0%, 
+    rgba(0, 68, 153, 0.6) 50%,
+    rgba(51, 132, 214, 0.7) 100%);
+}
+
+.hero-title::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--copenhagen-red);
+  margin: var(--spacing-md) auto 0 auto;
+  border-radius: 2px;
+}
+
+/* ===== NAVIGATION COPENHAGEN STYLING ===== */
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 2px solid var(--copenhagen-blue);
+}
+
+.nav-brand::before {
+  content: "🏛️";
+  margin-right: var(--spacing-xs);
+  font-size: 1.2em;
+}
+
+.nav-title {
+  color: var(--copenhagen-blue);
+  font-weight: var(--font-weight-bold);
+}
+
+.nav-link:hover {
+  color: var(--copenhagen-blue);
+  border-bottom: 2px solid var(--copenhagen-red);
+  padding-bottom: 2px;
+}
+
+/* ===== BUTTONS COPENHAGEN STYLING ===== */
+.btn-primary {
+  background: var(--copenhagen-gradient-primary);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.btn-primary:hover {
+  background: var(--copenhagen-blue-dark);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+}
+
+.btn-secondary {
+  border: 2px solid var(--copenhagen-blue);
+  color: var(--copenhagen-blue);
+}
+
+.btn-secondary:hover {
+  background: var(--copenhagen-blue);
+  color: white;
+}
+
+/* ===== SECTIONS COPENHAGEN STYLING ===== */
+.section-title {
+  position: relative;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: var(--copenhagen-red);
+  margin: var(--spacing-sm) auto 0 auto;
+  border-radius: var(--border-radius-sm);
+}
+
+/* ===== STEPS COPENHAGEN STYLING ===== */
+.step {
+  border-top: 4px solid var(--copenhagen-blue);
+  position: relative;
+}
+
+.step::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 4px;
+  background: var(--copenhagen-red);
+}
+
+.step-number {
+  background: var(--copenhagen-gradient-primary);
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.step-icon {
+  background: linear-gradient(135deg, var(--copenhagen-blue-light) 0%, rgba(0, 102, 204, 0.1) 100%);
+  border-radius: var(--border-radius-full);
+  padding: var(--spacing-md);
+}
+
+/* ===== QR CODES COPENHAGEN STYLING ===== */
+.qr-preview {
+  border: 2px solid var(--copenhagen-blue);
+  background: linear-gradient(135deg, var(--copenhagen-blue-light) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+.qr-code {
+  border: 3px solid var(--copenhagen-blue);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+}
+
+.qr-label {
+  color: var(--copenhagen-blue);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ===== FEATURES COPENHAGEN STYLING ===== */
+.feature {
+  border-left: 4px solid var(--copenhagen-blue);
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.02) 0%, transparent 100%);
+}
+
+.feature-icon {
+  color: var(--copenhagen-blue);
+  text-shadow: 0 2px 4px rgba(0, 102, 204, 0.1);
+}
+
+/* ===== CTA SECTION COPENHAGEN STYLING ===== */
+.cta-section {
+  background: var(--copenhagen-gradient-primary);
+  position: relative;
+}
+
+.cta-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ===== FOOTER COPENHAGEN STYLING ===== */
+.footer {
+  background: linear-gradient(135deg, var(--copenhagen-blue-dark) 0%, #1a365d 100%);
+  border-top: 4px solid var(--copenhagen-red);
+}
+
+.footer-brand::after {
+  content: "🏀 Innovative Urban Solutions";
+  display: block;
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+  margin-top: var(--spacing-xs);
+}
+
+/* ===== AR INTERFACE COPENHAGEN STYLING ===== */
+.loading-screen {
+  background: var(--copenhagen-gradient-hero);
+}
+
+.welcome-screen {
+  background: var(--copenhagen-gradient-hero);
+}
+
+.ar-success {
+  background: var(--copenhagen-gradient-success);
+}
+
+.marker-icon.active {
+  border-color: var(--copenhagen-blue);
+  box-shadow: 0 0 20px rgba(0, 102, 204, 0.4);
+}
+
+.marker-pulse {
+  border-color: var(--copenhagen-blue);
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--copenhagen-green) 0%, var(--copenhagen-blue) 100%);
+}
+
+/* ===== FEEDBACK SYSTEM COPENHAGEN STYLING ===== */
+.vote-btn.vote-yes.selected {
+  border-color: var(--copenhagen-green);
+  background: rgba(0, 166, 82, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 166, 82, 0.2);
+}
+
+.vote-btn.vote-no.selected {
+  border-color: var(--copenhagen-red);
+  background: rgba(228, 0, 43, 0.1);
+  box-shadow: 0 0 0 2px rgba(228, 0, 43, 0.2);
+}
+
+.vote-btn.selected {
+  border-color: var(--copenhagen-blue);
+  background: rgba(0, 102, 204, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+.feedback-header {
+  background: linear-gradient(135deg, var(--copenhagen-blue) 0%, var(--copenhagen-blue-light) 100%);
+  color: white;
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.feedback-close {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.feedback-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.privacy-notice {
+  border-left-color: var(--copenhagen-blue);
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05) 0%, transparent 100%);
+}
+
+.stat-number {
+  color: var(--copenhagen-blue);
+}
+
+/* ===== DANISH TYPOGRAPHY SUPPORT ===== */
+@supports (font-variant-ligatures: common-ligatures) {
+  body {
+    font-variant-ligatures: common-ligatures;
+  }
+}
+
+/* Danish quotation marks */
+.quote::before { content: "»"; }
+.quote::after { content: "«"; }
+
+/* ===== ACCESSIBILITY COPENHAGEN STYLING ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --copenhagen-blue: #0052A3;
+    --copenhagen-blue-dark: #003366;
+    --copenhagen-red: #CC0022;
+    --copenhagen-green: #008040;
+  }
+}
+
+/* ===== SEASONAL VARIATIONS ===== */
+/* Winter theme (December - February) */
+@media (max-width: 0px) { /* Disabled by default, enable via JS */
+  .winter-theme {
+    --copenhagen-blue: #1E3A8A;
+    --copenhagen-blue-light: #60A5FA;
+    --primary-color: var(--copenhagen-blue);
+  }
+  
+  .hero-overlay {
+    background: linear-gradient(135deg, 
+      rgba(30, 58, 138, 0.8) 0%, 
+      rgba(96, 165, 250, 0.6) 100%);
+  }
+}
+
+/* Summer theme (June - August) */
+@media (max-width: 0px) { /* Disabled by default, enable via JS */
+  .summer-theme {
+    --copenhagen-blue: #0EA5E9;
+    --copenhagen-blue-light: #7DD3FC;
+    --copenhagen-green: #10B981;
+  }
+}
+
+/* ===== PRINT COPENHAGEN STYLING ===== */
+@media print {
+  .hero-overlay {
+    background: none;
+  }
+  
+  .section-title::after,
+  .hero-title::after {
+    background: #000;
+  }
+  
+  .qr-code {
+    border: 2px solid #000;
+    background: #fff;
+  }
+  
+  .step {
+    border-top-color: #000;
+  }
+  
+  .step::before {
+    background: #000;
+  }
+}
+
+/* ===== COPENHAGEN MUNICIPALITY OFFICIAL STYLING ===== */
+.official-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--copenhagen-blue);
+  font-weight: var(--font-weight-medium);
+}
+
+.official-seal::before {
+  content: "🏛️";
+  font-size: 1.2em;
+}
+
+.municipal-badge {
+  background: linear-gradient(135deg, var(--copenhagen-blue) 0%, var(--copenhagen-blue-light) 100%);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.municipal-project-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: rgba(0, 102, 204, 0.1);
+  color: var(--copenhagen-blue);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.municipal-project-tag::before {
+  content: "📊";
+}
+
+/* ===== ANIMATIONS COPENHAGEN STYLING ===== */
+@keyframes copenhagenflag {
+  0%, 100% { 
+    transform: rotate(-2deg);
+  }
+  50% { 
+    transform: rotate(2deg);
+  }
+}
+
+.copenhagen-flag {
+  animation: copenhagenflag 3s ease-in-out infinite;
+}
+
+@keyframes municipalPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 102, 204, 0);
+  }
+}
+
+.municipal-highlight {
+  animation: municipalPulse 2s infinite;
+}
+
+/* ===== COPENHAGEN SPECIFIC COMPONENTS ===== */
+.copenhagen-court-info {
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05) 0%, transparent 100%);
+  border: 1px solid rgba(0, 102, 204, 0.2);
+  border-left: 4px solid var(--copenhagen-blue);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  margin: var(--spacing-md) 0;
+}
+
+.copenhagen-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, var(--copenhagen-blue-light) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--copenhagen-blue);
+}
+
+.copenhagen-stat {
+  text-align: center;
+}
+
+.copenhagen-stat-number {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--copenhagen-blue);
+  line-height: 1;
+}
+
+.copenhagen-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--copenhagen-blue-dark);
+  margin-top: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== UTILITY CLASSES COPENHAGEN ===== */
+.text-copenhagen-blue { color: var(--copenhagen-blue); }
+.text-copenhagen-red { color: var(--copenhagen-red); }
+.text-copenhagen-green { color: var(--copenhagen-green); }
+
+.bg-copenhagen-blue { background-color: var(--copenhagen-blue); }
+.bg-copenhagen-red { background-color: var(--copenhagen-red); }
+.bg-copenhagen-green { background-color: var(--copenhagen-green); }
+
+.border-copenhagen-blue { border-color: var(--copenhagen-blue); }
+.border-copenhagen-red { border-color: var(--copenhagen-red); }
+.border-copenhagen-green { border-color: var(--copenhagen-green); }
+
+/* ===== MOBILE COPENHAGEN ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .official-seal {
+    font-size: var(--font-size-xs);
+  }
+  
+  .municipal-badge {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  
+  .copenhagen-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+  
+  .copenhagen-stat-number {
+    font-size: var(--font-size-lg);
+  }
+}
